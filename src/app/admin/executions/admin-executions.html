@@ -1,0 +1,58 @@
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE EXECUTION_CONTROL SEC: ROOT_01</span>
+  <span class="right">JOB_MONITOR [ENFORCED]</span>
+</div>
+
+<section class="admin-shell">
+  <aside class="os-sidebar cs-shell">
+    <div class="sidebar-top mono">SEC: ROOT_01</div>
+    <div class="os-nav-top">
+      <a class="os-nav-item" routerLink="/admin"><span class="label mono">ADMIN_HOME</span></a>
+      <a class="os-nav-item" routerLink="/admin/users"><span class="label mono">MANAGE_USERS</span></a>
+      <a class="os-nav-item" routerLink="/admin/analytics"><span class="label mono">ANALYTICS</span></a>
+      <a class="os-nav-item" routerLink="/admin/sessions"><span class="label mono">SESSIONS</span></a>
+      <a class="os-nav-item active" routerLink="/admin/executions"><span class="label mono">EXECUTIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/languages"><span class="label mono">LANGUAGES</span></a>
+      <a class="os-nav-item" routerLink="/admin/notifications"><span class="label mono">NOTIFICATIONS</span></a>
+      <a class="os-nav-item" routerLink="/profile"><span class="label mono">PROFILE</span></a>
+    </div>
+  </aside>
+
+  <main class="os-main">
+    <section class="content-wrap">
+      <header class="cs-card header">
+        <div>
+          <h1 class="mono">EXECUTION_JOBS</h1>
+          <p>Review running jobs and cancel runaway executions.</p>
+        </div>
+        <div class="filters">
+          <select [(ngModel)]="statusFilter" (change)="loadJobs()">
+            <option value="ALL">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="RUNNING">Running</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="FAILED">Failed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+          <button class="os-nav-item refresh" type="button" (click)="loadJobs()">REFRESH</button>
+        </div>
+      </header>
+
+      <section class="cs-card list">
+        <div class="state" *ngIf="loading">Loading jobs...</div>
+        <div class="state error" *ngIf="error">{{ error }}</div>
+        <div class="state" *ngIf="!loading && !error && jobs.length === 0">No jobs found.</div>
+
+        <article class="job" *ngFor="let job of jobs">
+          <div>
+            <div class="mono">JOB {{ job.jobId }}</div>
+            <div class="mono muted">LANG {{ job.language }} · STATUS {{ job.status }}</div>
+          </div>
+          <div class="actions">
+            <button class="danger" type="button" (click)="cancelJob(job)" [disabled]="job.status === 'CANCELLED' || job.status === 'COMPLETED' || job.status === 'FAILED'">CANCEL</button>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+</section>

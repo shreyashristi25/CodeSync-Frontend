@@ -1,0 +1,8 @@
+<div class="editor-container">
+  <div class="editor-toolbar">
+    <select class="language-select" [(ngModel)]="selectedLanguage" (ngModelChange)="onLanguageChange()">
+      <option *ngFor="let lang of languages" [value]="lang.value">{{ lang.name }}</option>
+    </select>
+  </div>
+  <div class="editor-root" #editorHost></div>
+</div>

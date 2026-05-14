@@ -1,0 +1,51 @@
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE ANALYTICS SEC: ROOT_01</span>
+  <span class="right">PLATFORM_OBSERVABILITY [LIVE]</span>
+</div>
+
+<section class="analytics-shell">
+  <header class="analytics-head cs-card">
+    <div>
+      <h1 class="mono">PLATFORM_ANALYTICS</h1>
+      <p>Operational insights and activity summaries.</p>
+    </div>
+    <a class="mono back-btn" routerLink="/admin">&larr; BACK_ADMIN</a>
+  </header>
+
+  <section class="stats-row">
+    <article class="stat-card cs-card"><span class="mono">TOTAL_USERS</span><strong>{{ stats.totalUsers }}</strong></article>
+    <article class="stat-card cs-card"><span class="mono">ACTIVE_THIS_WEEK</span><strong>{{ stats.activeThisWeek }}</strong></article>
+    <article class="stat-card cs-card"><span class="mono">TOTAL_PROJECTS</span><strong>{{ stats.totalProjects }}</strong></article>
+    <article class="stat-card cs-card"><span class="mono">TOTAL_EXECUTIONS</span><strong>{{ stats.totalExecutions }}</strong></article>
+    <article class="stat-card cs-card"><span class="mono">AVG_EXEC_MS</span><strong>{{ stats.avgExecutionTime }}</strong></article>
+  </section>
+
+  <section class="chart-grid">
+    <article class="chart-card cs-card">
+      <h2 class="mono">User Registrations (12M)</h2>
+      <div class="canvas-wrap"><canvas #registrationsCanvas></canvas></div>
+    </article>
+
+    <article class="chart-card cs-card">
+      <h2 class="mono">Executions by Language</h2>
+      <div class="canvas-wrap"><canvas #executionsByLanguageCanvas></canvas></div>
+    </article>
+
+    <article class="chart-card cs-card">
+      <h2 class="mono">Projects by Language</h2>
+      <div class="canvas-wrap"><canvas #projectsByLanguageCanvas></canvas></div>
+    </article>
+
+    <article class="chart-card cs-card">
+      <h2 class="mono">Daily Activity (30D)</h2>
+      <div class="canvas-wrap"><canvas #dailyActivityCanvas></canvas></div>
+    </article>
+
+    <article class="chart-card cs-card feed">
+      <h2 class="mono">Recent Activity</h2>
+      <div class="feed-list">
+        <div class="feed-item" *ngFor="let item of activityFeed">{{ item }}</div>
+      </div>
+    </article>
+  </section>
+</section>

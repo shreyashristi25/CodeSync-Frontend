@@ -1,0 +1,109 @@
+<div class="pricing-page">
+  <header class="pricing-header">
+    <h1>Upgrade to CodeSync Pro</h1>
+    <p>Unlock unlimited potential</p>
+    <button class="back-btn" routerLink="/dashboard">← Back to Dashboard</button>
+  </header>
+
+  <div class="pricing-grid" *ngIf="!loading; else loadingTpl">
+    <!-- Free Plan -->
+    <div class="plan-card" [class.current]="currentTier === 'FREE'">
+      <div class="plan-header">
+        <h2>Free</h2>
+        <div class="price">
+          <span class="currency">₹</span>
+          <span class="amount">0</span>
+          <span class="period">/month</span>
+        </div>
+      </div>
+      <ul class="features">
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Up to {{ subscriptionStatus?.projectsLimit || 5 }} projects
+        </li>
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          {{ subscriptionStatus?.executionsLimit || 50 }} code executions/month
+        </li>
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Up to {{ subscriptionStatus?.collaboratorsLimit || 3 }} collaborators/project
+        </li>
+        <li [class.disabled]="true">
+          <lucide-icon name="x" class="icon x"></lucide-icon>
+          Unlimited projects
+        </li>
+        <li [class.disabled]="true">
+          <lucide-icon name="x" class="icon x"></lucide-icon>
+          Unlimited executions
+        </li>
+        <li [class.disabled]="true">
+          <lucide-icon name="x" class="icon x"></lucide-icon>
+          Unlimited collaborators
+        </li>
+      </ul>
+      <div class="plan-footer">
+        <span class="current-badge" *ngIf="currentTier === 'FREE'">Current Plan</span>
+      </div>
+    </div>
+
+    <!-- Pro Plan -->
+    <div class="plan-card pro" [class.current]="currentTier === 'PRO'">
+      <div class="plan-badge">MOST POPULAR</div>
+      <div class="plan-header">
+        <h2>Pro</h2>
+        <div class="price">
+          <span class="currency">₹</span>
+          <span class="amount">199</span>
+          <span class="period">/month</span>
+        </div>
+      </div>
+      <ul class="features">
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Unlimited projects
+        </li>
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Unlimited code executions
+        </li>
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Unlimited collaborators per project
+        </li>
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Priority support
+        </li>
+        <li>
+          <lucide-icon name="check" class="icon check"></lucide-icon>
+          Early access to new features
+        </li>
+      </ul>
+      <div class="plan-footer">
+        <button 
+          class="upgrade-btn" 
+          (click)="upgradeToPro()"
+          [disabled]="processingPayment || currentTier === 'PRO'">
+          <lucide-icon *ngIf="processingPayment" name="loader-2" class="spin"></lucide-icon>
+          {{ currentTier === 'PRO' ? 'Current Plan' : processingPayment ? 'Processing...' : 'Upgrade Now' }}
+        </button>
+        
+        <button 
+          *ngIf="subscriptionStatus?.testMode"
+          class="test-btn"
+          (click)="activateTestMode()"
+          [disabled]="processingPayment || currentTier === 'PRO'">
+          Activate Test Mode
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="loading">
+      <lucide-icon name="loader-2" class="spin"></lucide-icon>
+      Loading...
+    </div>
+  </ng-template>
+</div>

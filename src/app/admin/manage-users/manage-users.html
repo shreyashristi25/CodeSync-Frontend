@@ -1,0 +1,110 @@
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE USER_DIRECTORY SEC: ROOT_01</span>
+  <span class="right">RBAC [ENFORCED]</span>
+</div>
+
+<section class="users-shell">
+  <header class="users-head cs-card">
+    <div>
+      <h1 class="mono">MANAGE_USERS</h1>
+      <p>Manage roles, account status, and invitations.</p>
+    </div>
+    <div class="head-actions">
+      <button (click)="openInvite()">Invite User</button>
+      <a class="mono" routerLink="/admin">&larr; BACK_ADMIN</a>
+    </div>
+  </header>
+
+  <section class="filters cs-card">
+    <input type="text" [(ngModel)]="search" (input)="applyFilters()" placeholder="Search name or email" />
+    <select [(ngModel)]="roleFilter" (change)="applyFilters()">
+      <option value="all">All Roles</option>
+      <option value="ADMIN">Admin</option>
+      <option value="DEVELOPER">Developer</option>
+      <option value="GUEST">Guest</option>
+    </select>
+    <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+      <option value="all">All Status</option>
+      <option value="ACTIVE">Active</option>
+      <option value="SUSPENDED">Suspended</option>
+    </select>
+  </section>
+
+  <section class="table-wrap cs-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Avatar</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Projects</th>
+          <th>Joined</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of pageUsers">
+          <td><span class="avatar-pill mono">{{ getAvatarLabel(user) }}</span></td>
+          <td>{{ user.fullName }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="pill role" [class.role-admin]="user.role === 'ADMIN'" [class.role-dev]="user.role === 'DEVELOPER'" [class.role-guest]="user.role === 'GUEST'">
+              {{ user.role | lowercase }}
+            </span>
+          </td>
+          <td>{{ getProjectCount() }}</td>
+          <td>{{ user.createdAt | date:'MMM d, HH:mm' }}</td>
+          <td><span class="pill" [class.suspended]="user.status==='SUSPENDED'">{{ user.status | lowercase }}</span></td>
+          <td class="action-group">
+            <select [ngModel]="user.role" (ngModelChange)="setRole(user, $event)">
+              <option value="ADMIN">admin</option>
+              <option value="DEVELOPER">developer</option>
+            </select>
+            <button (click)="toggleStatus(user)">{{ user.status === 'ACTIVE' ? 'Suspend' : 'Activate' }}</button>
+            <button class="danger-btn" (click)="openDelete(user)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="pageUsers.length === 0">
+          <td colspan="8" class="empty">No users match current filters.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pager">
+      <button (click)="prevPage()" [disabled]="page===1">Prev</button>
+      <span class="mono">PAGE {{ page }} / {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="page===totalPages">Next</button>
+    </div>
+  </section>
+</section>
+
+<div class="modal-wrap" *ngIf="showDeleteModal" (click)="closeDelete()">
+  <section class="modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">DELETE_USER</h3>
+    <p>Delete {{ deleteTarget?.fullName }} from the platform?</p>
+    <div class="modal-actions">
+      <button class="danger-btn" (click)="confirmDelete()">Delete</button>
+      <button (click)="closeDelete()">Cancel</button>
+    </div>
+  </section>
+</div>
+
+<div class="modal-wrap" *ngIf="showInviteModal" (click)="closeInvite()">
+  <section class="modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">INVITE_USER</h3>
+    <label>Email</label>
+    <input type="email" [(ngModel)]="inviteEmail" />
+    <label>Role</label>
+    <select [(ngModel)]="inviteRole">
+      <option value="DEVELOPER">developer</option>
+      <option value="ADMIN">admin</option>
+      <option value="GUEST">guest</option>
+    </select>
+    <div class="modal-actions">
+      <button (click)="invite()">Send Invite</button>
+      <button (click)="closeInvite()">Cancel</button>
+    </div>
+  </section>
+</div>

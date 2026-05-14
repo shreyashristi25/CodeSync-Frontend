@@ -1,0 +1,576 @@
+<div class="mode-toggle">
+  <button
+    class="mode-btn"
+    id="modeToggle"
+    onclick="(function(){const root=document.documentElement;const dark=root.getAttribute('data-theme')==='dark';root.setAttribute('data-theme',dark?'light':'dark');const label=document.getElementById('modeLabel');if(label){label.textContent=dark?'LIGHT':'DARK';}localStorage.setItem('cs-theme',dark?'light':'dark');})();"
+  >
+    <svg class="icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+    </svg>
+    <svg class="icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+    <span class="mode-label mono" id="modeLabel">DARK</span>
+  </button>
+</div>
+
+<div class="cs-top-bar" [class.collab-glow]="isCollabMode">
+  <span class="left">WORKSPACE: {{ projectId }} SEC: EDITOR_01 <span *ngIf="isCollabMode" class="collab-badge">COLLAB_ACTIVE</span></span>
+  <span class="right" style="display: inline-flex; align-items: center; gap: 10px;">
+    <app-notification-bell></app-notification-bell>
+
+    {{ status === 'Connected' ? (isCollabMode ? '3' : '1') : '0' }} COLLAB · <span class="status-dot"></span> LIVE_SESSION ·
+    LATENCY {{ 9 + (terminalLines.length % 13) }}ms LOAD {{ 18 + (files.length % 40) }}% REQ/S {{ 790 + (tree.length * 7) }}
+  </span>
+</div>
+
+<section class="os-shell">
+  <main class="os-main">
+    <div class="workspace-layout">
+      <aside class="workspace-sidebar cs-card" id="sidebarPanel">
+        <div class="resize-handle-h" id="sidebarResize"></div>
+        <div class="sidebar-topbar">
+          <div class="sidebar-title mono">FILE_TREE</div>
+          <div class="sidebar-actions">
+            <button class="sidebar-add-btn mono" (click)="showNewFileModal(false)" title="New File">+</button>
+            <button class="sidebar-add-btn mono" (click)="showNewFileModal(true)" title="New Folder">▸</button>
+          </div>
+          <div class="sidebar-status mono" [class.connected]="status === 'Connected'">{{ status }}</div>
+        </div>
+        <div class="folder-target-bar" *ngIf="selectedFolderId">
+          <span class="mono folder-target-label">IN: {{ getSelectedFolderName() }}</span>
+          <button class="sidebar-add-btn mono" (click)="createInSelectedFolder(false)" title="New File Here">+</button>
+          <button class="sidebar-add-btn mono" (click)="createInSelectedFolder(true)" title="New Folder Here">▸</button>
+        </div>
+        <div class="sidebar-loading" *ngIf="loadingTree">Loading tree...</div>
+        <div class="sidebar-error" *ngIf="error">{{ error }}</div>
+
+        <app-file-tree
+          [nodes]="tree"
+          [selectedId]="selectedFile?.id ?? null"
+          [selectedFolderId]="selectedFolderId"
+          (fileSelected)="onFileSelected($event)"
+          (fileRenamed)="onFileRenamed($event)"
+          (folderSelected)="onFolderSelected($event)">
+        </app-file-tree>
+
+        <!-- Collab panel lives in the sidebar free space -->
+        <div class="sidebar-collab-panel" *ngIf="showCollabPanel">
+          <div class="sidebar-collab-header">
+            <span class="mono sidebar-collab-title">COLLAB</span>
+            <button class="sidebar-add-btn mono" (click)="toggleCollabPanel()" title="Close">×</button>
+          </div>
+
+          <!-- No active session -->
+          <div *ngIf="!collabSession" class="sidebar-collab-body">
+            <p class="sidebar-collab-hint">Start or join a real-time session</p>
+
+            <button class="sidebar-collab-btn" (click)="startCollabSession()" [disabled]="!selectedFile || readOnly">
+              <span>▶</span> Start Session
+            </button>
+            <button class="sidebar-collab-btn secondary" (click)="joinCollabSession()" [disabled]="!selectedFile || readOnly">
+              <span>+</span> Join Session
+            </button>
+
+            <div *ngIf="selectedFile" class="sidebar-share">
+              <p class="share-label">Share link:</p>
+              <div class="sidebar-share-row">
+                <input type="text" [value]="getShareLink()" readonly class="sidebar-share-input" />
+                <button class="copy-btn" (click)="copyShareLink()">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active session -->
+          <div *ngIf="collabSession" class="sidebar-collab-body">
+            <div class="sidebar-session-status">
+              <span class="status-dot active"></span>
+              <span class="mono" style="font-size:11px;">Live Session</span>
+            </div>
+
+            <!-- Secret Session ID -->
+            <div class="sidebar-share">
+              <p class="share-label">Session ID:</p>
+              <div class="sidebar-share-row">
+                <input type="text" [value]="getSessionId()" readonly class="sidebar-share-input session-id-input" />
+                <button class="copy-btn" (click)="copySessionId()">Copy</button>
+              </div>
+            </div>
+
+            <div *ngIf="isCollabOwner" class="sidebar-share">
+              <p class="share-label">Share link:</p>
+              <div class="sidebar-share-row">
+                <input type="text" [value]="getShareLink()" readonly class="sidebar-share-input" />
+                <button class="copy-btn" (click)="copyShareLink()">Copy</button>
+              </div>
+            </div>
+
+            <div class="sidebar-participants">
+              <div class="sidebar-participants-header mono">
+                <span>Participants</span>
+                <span class="count-badge">{{ collabParticipants.length }}</span>
+              </div>
+              <div class="sidebar-participant" *ngFor="let p of collabParticipants">
+                <span class="participant-avatar" [style.backgroundColor]="getParticipantColor(p.userId)"
+                  style="width:24px;height:24px;font-size:11px;">{{ (p.displayName || '?').charAt(0).toUpperCase() }}</span>
+                <div style="flex:1;min-width:0;">
+                  <span class="participant-name" style="font-size:12px;">{{ p.displayName }}</span>
+                  <span *ngIf="isCurrentUser(p.userId)" class="you-badge">You</span>
+                  <span *ngIf="collabSession.hostUserId === p.userId" class="owner-badge">Host</span>
+                </div>
+                <button *ngIf="isCollabOwner && !isCurrentUser(p.userId)" class="kick-btn-small" (click)="kickParticipant(p.userId)">×</button>
+              </div>
+            </div>
+
+            <button class="sidebar-collab-btn" [class.active]="showChatPanel" (click)="toggleChatPanel()">
+              <span>💬</span> {{ showChatPanel ? 'CHAT: ON' : 'CHAT: OFF' }}
+            </button>
+
+            <button *ngIf="isCollabOwner" class="sidebar-collab-btn danger" (click)="endCollabSession()">
+              <span>⏹</span> End Session
+            </button>
+            <button *ngIf="!isCollabOwner" class="sidebar-collab-btn secondary" (click)="leaveCollabSession()">
+              <span>↪</span> Leave
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="workspace-main cs-card" [class.comments-hidden]="!showCommentsPanel">
+        <header class="workspace-header mono">
+          <div class="tab-strip">
+            <button
+              class="tab-chip"
+              *ngFor="let tab of openTabs"
+              [class.active]="selectedFile?.path === tab.path"
+              (click)="switchTab(tab)">
+              <span>{{ tab.name }}</span>
+              <span class="dirty-dot" *ngIf="dirtyPaths.has(tab.path)">●</span>
+              <span class="close-x" (click)="$event.stopPropagation(); closeTab(tab.path)">×</span>
+            </button>
+            <span class="tab-active" *ngIf="openTabs.length === 0">NO_FILE_SELECTED</span>
+          </div>
+
+          <div class="header-buttons">
+            <button class="review-btn mono" (click)="toggleCollabPanel()">{{ showCollabPanel ? 'COLLAB: ON' : 'COLLAB: OFF' }}</button>
+            <button class="review-btn mono" (click)="toggleCommentsPanel()">{{ showCommentsPanel ? 'COMMENTS: ON' : 'COMMENTS: OFF' }}</button>
+            <button class="review-btn mono" (click)="toggleCommitPanel()">{{ showCommitPanel ? 'COMMITS: ON' : 'COMMITS: OFF' }}</button>
+            <button class="review-btn mono" (click)="toggleVcsPanel()" [class.active-toggle]="showVcsPanel" title="Version Control">VCS: {{ showVcsPanel ? 'ON' : 'OFF' }}</button>
+            <button class="review-btn mono" (click)="toggleStdinInput()" [class.active-toggle]="showStdinInput" title="Provide stdin input for the next run">STDIN: {{ showStdinInput ? 'ON' : 'OFF' }}</button>
+            <button class="run-btn mono" (click)="saveCurrentFile()" [disabled]="!selectedFile || readOnly" [attr.title]="readOnly ? 'Sign in to edit' : null">SAVE_FILE</button>
+            <button class="run-btn mono" *ngIf="!isRunning" (click)="onRunCode()" [disabled]="!selectedFile || readOnly" [attr.title]="readOnly ? 'Sign in to run' : null">RUN_CODE &rarr;</button>
+            <button class="stop-btn mono" *ngIf="isRunning" (click)="cancelExecution()">&#9646;&#9646; CANCEL</button>
+          </div>
+        </header>
+
+        <div class="find-bar" *ngIf="showFindBar">
+          <input type="text" [(ngModel)]="findQuery" (input)="onFindInput()" placeholder="Find in file" />
+          <span class="mono find-count">{{ findActiveIndex }} / {{ findCount }}</span>
+          <button class="sidebar-tab mono" (click)="findPrev()">Prev</button>
+          <button class="sidebar-tab mono" (click)="findNext()">Next</button>
+          <button class="sidebar-tab mono" (click)="closeFindBar()">Close</button>
+        </div>
+
+        <section class="project-search-panel" *ngIf="showProjectSearchPanel">
+          <div class="search-head">
+            <input type="text" [(ngModel)]="searchQuery" placeholder="Search across project files" />
+            <button class="run-btn mono" (click)="performSearchOnClick()">FIND</button>
+            <input type="text" [(ngModel)]="replaceText" placeholder="Replace with" />
+            <button class="run-btn mono" (click)="replaceAll()" [disabled]="readOnly" [attr.title]="readOnly ? 'Sign in to edit' : null">REPLACE ALL</button>
+            <button class="sidebar-tab mono" (click)="closeProjectSearch()">CLOSE</button>
+          </div>
+
+          <div class="search-results" *ngIf="groupedSearchResults.length > 0; else noSearchMatches">
+            <div class="search-group" *ngFor="let group of groupedSearchResults">
+              <div class="group-title mono">{{ group.path }}</div>
+              <button class="search-result" *ngFor="let item of group.items" (click)="openSearchResult({ path: group.path, line: item.line, startColumn: item.startColumn, endColumn: item.endColumn })">
+                <span class="mono line-no">L{{ item.line }}</span>
+                <span class="preview" [innerHTML]="highlightMatch(item.preview, searchQuery)"></span>
+                <button class="replace-btn mono" (click)="replaceSingle(group.path, item.line); $event.stopPropagation()" [disabled]="readOnly" [attr.title]="readOnly ? 'Sign in to edit' : 'Replace this'">REPLACE</button>
+              </button>
+            </div>
+          </div>
+          <ng-template #noSearchMatches>
+            <div class="history-empty">No results for current query.</div>
+          </ng-template>
+        </section>
+
+
+        <div style="display: flex; gap: 10px; flex: 1; min-height: 0;">
+          <div class="editor-shell" *ngIf="selectedFile && !loadingFile; else loadingOrEmpty" style="flex: 1; min-width: 0;">
+            <app-live-editor
+  *ngIf="selectedFile"
+  [content]="selectedFile.content || ''"
+  [language]="selectedFile.language"
+  [readOnly]="readOnly"
+  [remoteCursors]="liveCursors"
+  (contentChange)="onEditorContentChanged($event)"
+  (cursorMove)="onEditorCursorMoved($event)"
+  (languageChange)="onEditorLanguageChanged($event)">
+</app-live-editor>
+          </div>
+
+          <ng-template #loadingOrEmpty>
+            <div class="editor-empty mono" *ngIf="loadingFile">OPENING_FILE...</div>
+            <div class="editor-empty mono" *ngIf="!loadingFile">SELECT A FILE TO START EDITING.</div>
+          </ng-template>
+
+          <aside class="workspace-right cs-card" *ngIf="showCommentsPanel || (collabSession && showChatPanel)" id="commentsPanel" style="width: 350px; flex-shrink: 0; position: relative; display: flex; flex-direction: column; overflow: hidden;">
+            <div class="resize-handle-v" id="commentsResize"></div>
+            
+            <!-- Comments Section -->
+            <div class="comments-section-container" *ngIf="showCommentsPanel" style="flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;">
+
+            <section class="comment-composer-right" *ngIf="pendingCommentOpen && selectedCommentRange" style="position: absolute; width: calc(100% - 20px); z-index: 50; margin: 10px; background: #0a0d12; border: 1px solid var(--cs-border); box-shadow: 0 4px 12px rgba(0,0,0,0.5); border-radius: 6px;" [style.top.px]="(selectedCommentRange.startLine - 1) * 19">
+              <div class="mono composer-range">Lines {{ selectedCommentRange.startLine }}-{{ selectedCommentRange.endLine }}</div>
+              <textarea rows="4" [(ngModel)]="newCommentText" placeholder="Write inline comment" (keydown)="$event.stopPropagation()" (click)="$event.stopPropagation()"></textarea>
+              <div class="composer-actions">
+                <button class="run-btn mono" (click)="addComment()" [disabled]="readOnly" [attr.title]="readOnly ? 'Sign in to edit' : null">SUBMIT</button>
+                <button class="sidebar-tab mono" (click)="cancelPendingComment()">CANCEL</button>
+              </div>
+            </section>
+
+            <div class="right-heading mono">INLINE_COMMENTS</div>
+
+            <div class="right-tabs">
+              <button class="sidebar-tab mono" [class.active]="commentFilter === 'all'" (click)="commentFilter='all'">ALL</button>
+              <button class="sidebar-tab mono" [class.active]="commentFilter === 'open'" (click)="commentFilter='open'">ACTIVE</button>
+              <button class="sidebar-tab mono" [class.active]="commentFilter === 'resolved'" (click)="commentFilter='resolved'">RESOLVED</button>
+            </div>
+
+            <!-- Show Add Comment button when not already writing a comment -->
+            <div class="comment-add-prompt" *ngIf="!pendingCommentOpen && !readOnly">
+              <p class="mono">Select code in editor, then click:</p>
+              <button class="run-btn mono" (click)="openCommentComposerFromSelection()">+ ADD COMMENT</button>
+            </div>
+            <div class="comment-add-prompt" *ngIf="!pendingCommentOpen && readOnly">
+              <p class="mono">Sign in to add comments</p>
+            </div>
+
+            <div class="comment-list">
+              <article
+                class="comment-item"
+                *ngFor="let comment of getFilteredComments(); trackBy: trackById"
+                [class.resolved]="comment.resolved"
+                (click)="jumpToComment(comment)">
+                <div class="comment-meta mono">L{{ comment.lineNumber }} &bull; {{ getCommentAuthorName(comment) }} &bull; {{ comment.createdAt | date:'short' }}</div>
+                <div *ngIf="editingCommentId !== comment.id">{{ comment.content }}</div>
+                <div *ngIf="editingCommentId === comment.id" class="comment-edit" (click)="$event.stopPropagation()">
+                  <textarea rows="3" [(ngModel)]="editCommentText" (keydown)="$event.stopPropagation()"></textarea>
+                  <button class="sidebar-tab mono" (click)="saveEditComment(comment.id)">SAVE</button>
+                  <button class="sidebar-tab mono" (click)="cancelEditComment()">CANCEL</button>
+                </div>
+                <div *ngIf="replyingCommentId === comment.id" class="comment-reply" (click)="$event.stopPropagation()">
+                  <textarea rows="2" [(ngModel)]="replyCommentText" placeholder="Write reply..." (keydown)="$event.stopPropagation()"></textarea>
+                  <button class="sidebar-tab mono" (click)="submitReply(comment.id)">REPLY</button>
+                  <button class="sidebar-tab mono" (click)="cancelReply()">CANCEL</button>
+                </div>
+
+                <!-- Replies list -->
+                <div class="comment-replies" *ngIf="comment.replies && comment.replies.length > 0">
+                  <div class="reply-item" *ngFor="let reply of comment.replies">
+                    <div class="reply-meta mono">{{ getCommentAuthorName(reply) }} &bull; {{ reply.createdAt | date:'short' }}</div>
+                    <div class="reply-content">{{ reply.content }}</div>
+                  </div>
+                </div>
+                <div class="comment-actions">
+                  <button class="sidebar-tab mono" *ngIf="!comment.resolved" (click)="$event.stopPropagation(); resolveComment(comment.id)" [disabled]="readOnly" [attr.title]="readOnly ? 'Sign in to edit' : null">RESOLVE</button>
+                  <button class="sidebar-tab mono" (click)="$event.stopPropagation(); startEditComment(comment)" [disabled]="readOnly">EDIT</button>
+                  <button class="sidebar-tab mono" (click)="$event.stopPropagation(); startReply(comment.id)" [disabled]="readOnly">REPLY</button>
+                  <button class="sidebar-tab mono danger" (click)="$event.stopPropagation(); deleteComment(comment.id)" [disabled]="readOnly" [attr.title]="readOnly ? 'Sign in to edit' : null">DELETE</button>
+                </div>
+              </article>
+              <div class="history-empty" *ngIf="getFilteredComments().length === 0">No comments for current filter.</div>
+            </div>
+            </div> <!-- End Comments Section -->
+
+            <!-- Collab Chat Panel -->
+            <div class="collab-chat-panel" *ngIf="collabSession && showChatPanel" style="flex: 1; max-height: 50%; display: flex; flex-direction: column; border-top: 1px solid var(--cs-border);">
+              <div class="collab-chat-header mono" (click)="toggleChatPanel()">
+                <div class="collab-chat-title">
+                  <span class="collab-chat-icon">💬</span>
+                  <span>SESSION_CHAT</span>
+                  <span class="count-badge" *ngIf="chatMessages.length > 0">{{ chatMessages.length }}</span>
+                </div>
+                <span class="chat-toggle">▾</span>
+              </div>
+              <div class="collab-chat-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                <div class="collab-chat-messages" #chatContainer style="flex: 1; overflow-y: auto;">
+                  <div class="chat-empty mono" *ngIf="chatMessages.length === 0">No messages yet. Start the conversation!</div>
+                  <div class="chat-message" *ngFor="let msg of chatMessages" [class.own-message]="isCurrentUser(msg.userId)">
+                    <div class="chat-message-header">
+                      <span class="chat-author" [style.color]="getParticipantColor(msg.userId)">{{ msg.displayName }}</span>
+                      <span class="chat-time mono">{{ formatChatTime(msg.timestamp) }}</span>
+                    </div>
+                    <div class="chat-message-text">{{ msg.message }}</div>
+                  </div>
+                </div>
+                <div class="collab-chat-input-row" style="flex-shrink: 0;">
+                  <input type="text" class="collab-chat-input mono" [(ngModel)]="chatInput"
+                    placeholder="Type a message..."
+                    (keydown)="$event.stopPropagation()"
+                    (keyup.enter)="sendChatMessage()" />
+                  <button class="collab-chat-send mono" (click)="sendChatMessage()" [disabled]="!chatInput.trim()">SEND</button>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <!-- stdin input panel -->
+        <div class="stdin-panel" *ngIf="showStdinInput">
+          <div class="stdin-header mono">
+            <span>STDIN_INPUT <span class="stdin-hint">(piped to process on next run)</span></span>
+            <button class="sidebar-add-btn mono" (click)="stdinInput = ''" title="Clear stdin">CLR</button>
+          </div>
+          <textarea
+            class="stdin-textarea mono"
+            [(ngModel)]="stdinInput"
+            placeholder="Enter standard input here, one value per line..."
+            rows="3">
+          </textarea>
+        </div>
+
+        <footer class="terminal-pane cs-card" id="terminalPanel">
+          <div class="resize-handle-v" id="terminalResize"></div>
+          <div class="terminal-tabs mono">
+            <button class="terminal-tab" [class.active]="bottomTab === 'terminal'" (click)="bottomTab = 'terminal'">TERMINAL</button>
+            <button class="terminal-tab" [class.active]="bottomTab === 'output'" (click)="bottomTab = 'output'">
+              STDOUT <span *ngIf="runOutput && bottomTab !== 'output'" class="output-dot"></span>
+            </button>
+            <button class="terminal-tab" [class.active]="bottomTab === 'stderr'" (click)="bottomTab = 'stderr'">
+              STDERR <span *ngIf="runStderr" class="stderr-dot"></span>
+            </button>
+            <div class="terminal-run-info mono" *ngIf="isRunning">
+              <span class="run-spinner"></span>
+              {{ runMs }}ms · {{ runMemory }}MB
+            </div>
+          </div>
+
+          <!-- TERMINAL tab -->
+          <div class="terminal-output" *ngIf="bottomTab === 'terminal'">
+            <div class="terminal-line" *ngFor="let line of terminalLines">{{ line }}</div>
+          </div>
+
+          <!-- STDOUT tab -->
+          <div class="terminal-output output-tab" *ngIf="bottomTab === 'output'">
+            <pre class="output-pre" *ngIf="runOutput">{{ runOutput }}</pre>
+            <div class="history-empty mono" *ngIf="!runOutput">No output yet. Run a file to see results.</div>
+          </div>
+
+          <!-- STDERR tab -->
+          <div class="terminal-output stderr-tab" *ngIf="bottomTab === 'stderr'">
+            <pre class="stderr-pre" *ngIf="runStderr">{{ runStderr }}</pre>
+            <div class="history-empty mono" *ngIf="!runStderr">No stderr output.</div>
+          </div>
+        </footer>
+      </section>
+    </div>
+  </main>
+</section>
+
+<div class="modal-overlay" *ngIf="showCommitPanel" (click)="showCommitPanel = false">
+  <div class="modal-content cs-card" (click)="$event.stopPropagation()" style="width: 500px; max-width: 90vw;">
+    <div class="modal-header mono">
+      <span>COMMIT_HISTORY</span>
+      <button class="modal-close" (click)="showCommitPanel = false">×</button>
+    </div>
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+      <div class="commit-list">
+        <button class="commit-item" *ngFor="let commit of commitEntries" (click)="openCommit(commit)">
+          <div class="commit-top">
+            <span class="mono hash">{{ commit.hash | slice:0:8 }}</span>
+            <span class="mono time">{{ commit.timestamp | date:'MMM d, HH:mm' }}</span>
+          </div>
+          <div class="commit-msg">{{ commit.message }}</div>
+          <div class="commit-meta mono">{{ commit.author }} &bull; +{{ commit.additions }} / -{{ commit.deletions }}</div>
+        </button>
+        <div class="history-empty" *ngIf="commitEntries.length === 0">No commits for this project.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VCS Panel -->
+<div class="modal-wrap" *ngIf="showVcsPanel" (click)="showVcsPanel = false">
+  <section class="modal vcs-modal" (click)="$event.stopPropagation()">
+    <header class="vcs-header">
+      <h3 class="mono">VERSION_CONTROL</h3>
+      <button class="sidebar-add-btn mono" (click)="showVcsPanel = false">×</button>
+    </header>
+    
+    <div class="vcs-toolbar mono">
+      <button class="vcs-tab-btn" (click)="showCommitModal = true" [disabled]="!selectedFile || readOnly">COMMIT</button>
+      <button class="vcs-tab-btn" (click)="showBranchModal = true">BRANCH</button>
+      <button class="vcs-tab-btn" (click)="showPrModal = true" [disabled]="!currentRepo">PULL_REQUEST</button>
+    </div>
+
+    <div class="vcs-content">
+      <!-- Repository selector -->
+      <div class="vcs-section" *ngIf="repositories.length > 0">
+        <label class="mono vcs-label">REPOSITORY</label>
+        <select class="vcs-select" [(ngModel)]="currentRepo" (change)="loadBranches(); loadPullRequests();">
+          <option *ngFor="let repo of repositories" [ngValue]="repo">{{ repo.name }}</option>
+        </select>
+      </div>
+
+      <!-- Branch selector -->
+      <div class="vcs-section" *ngIf="branches.length > 0">
+        <label class="mono vcs-label">BRANCH</label>
+        <select class="vcs-select" [(ngModel)]="currentBranch" (change)="onBranchChange()">
+          <option *ngFor="let branch of branches" [ngValue]="branch">{{ branch.name }} {{ branch.isDefault ? '(default)' : '' }}</option>
+        </select>
+      </div>
+
+      <!-- Pull Requests list -->
+      <div class="vcs-section" *ngIf="pullRequests.length > 0">
+        <label class="mono vcs-label">PULL_REQUESTS</label>
+        <div class="pr-list">
+          <div class="pr-item" *ngFor="let pr of pullRequests">
+            <div class="pr-header">
+              <span class="mono pr-title">{{ pr.title }}</span>
+              <span class="mono pr-status" [class.open]="pr.status === 'OPEN'" [class.merged]="pr.status === 'MERGED'">{{ pr.status }}</span>
+            </div>
+            <button class="pr-merge-btn mono" *ngIf="pr.status === 'OPEN'" (click)="mergePullRequest(pr)">MERGE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="history-empty" *ngIf="repositories.length === 0">
+        <p>No repository found. Create one to start using VCS.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Commit Modal -->
+<div class="modal-wrap" *ngIf="showCommitModal" (click)="showCommitModal = false">
+  <section class="modal commit-create-modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">CREATE_COMMIT</h3>
+    <div class="vcs-form">
+      <label class="mono vcs-label">FILE</label>
+      <input type="text" [value]="selectedFile?.name" readonly class="vcs-input" />
+      
+      <label class="mono vcs-label">MESSAGE</label>
+      <textarea [(ngModel)]="newCommitMessage" placeholder="Enter commit message..." class="vcs-textarea"></textarea>
+      
+      <button class="run-btn mono" (click)="createCommit()" [disabled]="!newCommitMessage.trim()">CREATE_COMMIT</button>
+      <button class="sidebar-tab mono" (click)="showCommitModal = false">CANCEL</button>
+    </div>
+  </section>
+</div>
+
+<!-- Branch Modal -->
+<div class="modal-wrap" *ngIf="showBranchModal" (click)="showBranchModal = false">
+  <section class="modal commit-create-modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">CREATE_BRANCH</h3>
+    <div class="vcs-form">
+      <label class="mono vcs-label">BRANCH_NAME</label>
+      <input type="text" [(ngModel)]="newBranchName" placeholder="feature/my-branch" class="vcs-input" />
+      
+      <button class="run-btn mono" (click)="createBranch()" [disabled]="!newBranchName.trim()">CREATE_BRANCH</button>
+      <button class="sidebar-tab mono" (click)="showBranchModal = false">CANCEL</button>
+    </div>
+  </section>
+</div>
+
+<!-- PR Modal -->
+<div class="modal-wrap" *ngIf="showPrModal" (click)="showPrModal = false">
+  <section class="modal commit-create-modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">CREATE_PULL_REQUEST</h3>
+    <div class="vcs-form">
+      <label class="mono vcs-label">TITLE</label>
+      <input type="text" [(ngModel)]="newPrTitle" placeholder="PR title" class="vcs-input" />
+      
+      <label class="mono vcs-label">DESCRIPTION</label>
+      <textarea [(ngModel)]="newPrDescription" placeholder="Description..." class="vcs-textarea"></textarea>
+      
+      <label class="mono vcs-label">FROM_BRANCH</label>
+      <select class="vcs-select" [(ngModel)]="selectedSourceBranch">
+        <option *ngFor="let branch of branches" [ngValue]="branch">{{ branch.name }}</option>
+      </select>
+      
+      <label class="mono vcs-label">TO_BRANCH</label>
+      <select class="vcs-select" [(ngModel)]="selectedTargetBranch">
+        <option *ngFor="let branch of branches" [ngValue]="branch">{{ branch.name }}</option>
+      </select>
+      
+      <button class="run-btn mono" (click)="createPullRequest()" [disabled]="!newPrTitle.trim() || !selectedSourceBranch || !selectedTargetBranch">CREATE_PR</button>
+      <button class="sidebar-tab mono" (click)="showPrModal = false">CANCEL</button>
+    </div>
+  </section>
+</div>
+
+<div class="modal-overlay" *ngIf="showDiffViewer" (click)="closeDiffViewer()">
+  <div class="modal-content cs-card" (click)="$event.stopPropagation()" style="width: 80vw; max-width: 1000px; height: 80vh; display: flex; flex-direction: column;">
+    <div class="modal-header mono" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cs-border); padding-bottom: 12px; margin-bottom: 12px;">
+      <span style="font-size: 14px;">DIFF_VIEWER &bull; {{ selectedCommit?.hash | slice:0:8 }}</span>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="run-btn mono" (click)="restoreCommit()" [disabled]="readOnly" title="Restore this file to the state of this commit">RESTORE_THIS_COMMIT</button>
+        <button class="sidebar-tab mono" [class.active]="diffMode === 'split'" (click)="diffMode = 'split'">SPLIT</button>
+        <button class="sidebar-tab mono" [class.active]="diffMode === 'unified'" (click)="diffMode = 'unified'">UNIFIED</button>
+        <button class="modal-close" style="margin-left: 8px;" (click)="closeDiffViewer()">×</button>
+      </div>
+    </div>
+    
+    <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 0;">
+
+    <div class="diff-split" *ngIf="diffMode === 'split'">
+      <div class="diff-column">
+        <div class="diff-row" *ngFor="let row of getDiffRows('old')" [class.deleted]="row.kind === 'deleted'">
+          <span class="line mono">{{ row.line }}</span>
+          <span class="code">{{ row.text }}</span>
+        </div>
+      </div>
+      <div class="diff-column">
+        <div class="diff-row" *ngFor="let row of getDiffRows('new')" [class.added]="row.kind === 'added'">
+          <span class="line mono">{{ row.line }}</span>
+          <span class="code">{{ row.text }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="diff-unified" *ngIf="diffMode === 'unified'">
+      <div class="diff-row" *ngFor="let row of getUnifiedRows()" [class.added]="row.kind === 'added'" [class.deleted]="row.kind === 'deleted'">
+        <span class="line mono">{{ row.leftLine }}</span>
+        <span class="line mono">{{ row.rightLine }}</span>
+        <span class="code">{{ row.text }}</span>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div class="cs-status-bar">
+  <span class="mono">_ WAITING_FOR_INPUT</span>
+  <span class="mono">v1.0.0.map</span>
+</div>
+
+<div class="modal-overlay" *ngIf="showFileModal" (click)="showFileModal = false">
+  <div class="modal-content cs-card" (click)="$event.stopPropagation()">
+    <div class="modal-header mono">
+      <span>{{ createFolder ? 'NEW_FOLDER' : 'NEW_FILE' }}</span>
+      <button class="modal-close" (click)="showFileModal = false">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="mono" style="font-size: 11px; color: var(--cs-text-muted); margin-bottom: 6px;" *ngIf="selectedFolderId">
+        IN: {{ getSelectedFolderName() }}/
+      </div>
+      <div class="mono" style="font-size: 11px; color: var(--cs-text-muted); margin-bottom: 6px;" *ngIf="!selectedFolderId">
+        IN: / (root)
+      </div>
+      <input
+        class="mono"
+        type="text"
+        [(ngModel)]="newFileName"
+        [placeholder]="createFolder ? 'folder-name' : 'file-name.ext'"
+        (keyup.enter)="createNode()"
+        autofocus />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel mono" (click)="showFileModal = false">CANCEL</button>
+      <button class="btn-confirm mono" (click)="createNode()" [disabled]="!newFileName.trim()">CREATE</button>
+    </div>
+  </div>
+</div>

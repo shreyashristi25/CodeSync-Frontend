@@ -1,0 +1,113 @@
+<div class="mode-toggle">
+  <button
+    class="mode-btn"
+    id="modeToggle"
+    onclick="(function(){const root=document.documentElement;const dark=root.getAttribute('data-theme')==='dark';root.setAttribute('data-theme',dark?'light':'dark');const label=document.getElementById('modeLabel');if(label){label.textContent=dark?'LIGHT':'DARK';}localStorage.setItem('cs-theme',dark?'light':'dark');})();"
+  >
+    <svg class="icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+    </svg>
+    <svg class="icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+    <span class="mode-label mono" id="modeLabel">DARK</span>
+  </button>
+</div>
+
+<div class="cs-top-bar">
+  <span class="left">AUTH_GATE: ADMIN SEC: ROOT_01</span>
+  <span class="right">JWT_SESSION [ROLE_VALIDATION]</span>
+</div>
+
+<main class="auth-layout">
+  <section class="auth-panel">
+    <div class="status-tags">
+      <span class="system-tag">[PRIVILEGED_ACCESS]</span>
+      <span class="system-tag">[AUDIT_MODE]</span>
+      <span class="system-tag">[ACCESS: ADMIN]</span>
+    </div>
+
+    <h1 class="auth-title">Admin Sign In</h1>
+    <p class="auth-subtitle typewriter-subtitle">Full platform access. All actions are logged and audited.</p>
+
+    <div class="form-fields">
+      <div class="field-group">
+        <label for="admin-email" class="mono">EMAIL</label>
+        <input id="admin-email" type="email" [(ngModel)]="email" placeholder="admin@company.com" [disabled]="loading" />
+      </div>
+
+      <div class="field-group">
+        <label for="admin-password" class="mono">PASSWORD</label>
+        <input id="admin-password" type="password" [(ngModel)]="password" placeholder="Enter password" [disabled]="loading" />
+      </div>
+    </div>
+
+    <div class="error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <button class="primary" (click)="submit()" [disabled]="loading">
+      {{ loading ? 'AUTHENTICATING_ROOT...' : 'AUTHENTICATE_ROOT &rarr;' }}
+    </button>
+
+    <a class="back-link mono" routerLink="/">&larr; RETURN_CONSOLE</a>
+
+    <div class="warning-panel mono">
+      &#9888; RESTRICTED ACCESS - All login attempts are logged
+    </div>
+
+    <section class="request-panel">
+      <div class="request-title mono">Request Admin Access</div>
+      <p class="request-sub">Developer accounts can request admin access for review.</p>
+
+      <div class="form-fields compact">
+        <div class="field-group">
+          <label for="request-email" class="mono">EMAIL</label>
+          <input id="request-email" type="email" [(ngModel)]="requestEmail" placeholder="dev@company.com" [disabled]="requestLoading" />
+        </div>
+        <div class="field-group">
+          <label for="request-password" class="mono">PASSWORD</label>
+          <input id="request-password" type="password" [(ngModel)]="requestPassword" placeholder="Developer password" [disabled]="requestLoading" />
+        </div>
+      </div>
+
+      <div class="error" *ngIf="requestError">{{ requestError }}</div>
+      <div class="success" *ngIf="requestMessage">{{ requestMessage }}</div>
+
+      <button class="secondary" type="button" (click)="submitAdminRequest()" [disabled]="requestLoading">
+        {{ requestLoading ? 'SENDING_REQUEST...' : 'REQUEST_ACCESS' }}
+      </button>
+    </section>
+
+    <section class="request-panel" style="margin-top: 20px; border-color: #ff9500;">
+      <div class="request-title mono" style="color: #ff9500;">DEV ONLY - Create Admin</div>
+      <p class="request-sub">For development/testing only.</p>
+
+      <div class="form-fields compact">
+        <div class="field-group">
+          <label for="dev-email" class="mono">EMAIL</label>
+          <input id="dev-email" type="email" [(ngModel)]="devEmail" placeholder="admin@test.com" [disabled]="devLoading" />
+        </div>
+        <div class="field-group">
+          <label for="dev-name" class="mono">NAME</label>
+          <input id="dev-name" type="text" [(ngModel)]="devName" placeholder="Admin Name" [disabled]="devLoading" />
+        </div>
+        <div class="field-group">
+          <label for="dev-password" class="mono">PASSWORD</label>
+          <input id="dev-password" type="password" [(ngModel)]="devPassword" placeholder="Password" [disabled]="devLoading" />
+        </div>
+      </div>
+
+      <div class="error" *ngIf="devError">{{ devError }}</div>
+      <div class="success" *ngIf="devMessage">{{ devMessage }}</div>
+
+      <button class="secondary" type="button" (click)="createDevAdmin()" [disabled]="devLoading" style="border-color: #ff9500; color: #ff9500;">
+        {{ devLoading ? 'CREATING...' : 'CREATE_ADMIN' }}
+      </button>
+    </section>
+  </section>
+</main>
+
+<div class="cs-status-bar">
+  <span class="mono">_ WAITING_FOR_INPUT</span>
+  <span class="mono">v1.0.0.map</span>
+</div>

@@ -1,0 +1,24 @@
+:host { display: block; min-height: calc(100vh - 60px); color: var(--cs-text-primary); }
+.admin-shell { display: flex; }
+.os-sidebar { position: fixed; top: 44px; left: 16px; bottom: 48px; width: 220px; border: 1px solid var(--cs-border); border-radius: 0; background: var(--cs-surface); display: flex; flex-direction: column; justify-content: space-between; z-index: 100; }
+[data-theme='light'] .os-sidebar { border-radius: 14px; box-shadow: var(--cs-shadow); }
+.sidebar-top { padding: 10px 12px; border-bottom: 1px solid var(--cs-border); font-size: 10px; color: var(--cs-error); }
+.os-nav-top { display: grid; gap: 1px; padding: 8px; }
+.os-nav-item { width: 100%; height: 36px; border: 1px solid var(--cs-border); background: var(--cs-surface-2); border-radius: 0; color: var(--cs-text-secondary); text-decoration: none; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; cursor: pointer; }
+[data-theme='light'] .os-nav-item { border-radius: 8px; }
+.os-nav-item.active,
+.os-nav-item:hover { border-color: var(--cs-error); color: var(--cs-error); }
+.os-main { margin-left: 250px; padding: 48px 16px 70px; flex: 1; }
+.content-wrap { display: grid; gap: 14px; }
+.header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.header p { margin: 4px 0 0; color: var(--cs-text-secondary); }
+.list { display: grid; gap: 10px; }
+.language { border: 1px solid var(--cs-border); background: var(--cs-surface-2); padding: 12px; display: grid; gap: 10px; align-items: center; grid-template-columns: 1fr 1fr auto auto; }
+.language input[type='text'] { border: 1px solid var(--cs-border); background: var(--cs-surface); color: var(--cs-text-primary); padding: 6px 8px; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--cs-text-secondary); }
+.save { border: 1px solid var(--cs-border); background: transparent; color: var(--cs-text-secondary); padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; cursor: pointer; }
+.save:hover { border-color: var(--cs-accent); color: var(--cs-accent); }
+.state { color: var(--cs-text-muted); font-size: 13px; }
+.state.error { color: var(--cs-error); }
+.refresh { height: 34px; width: auto; padding: 0 14px; font-size: 11px; }
+@media (max-width: 980px) { .os-sidebar { position: static; width: auto; margin: 0 10px; top: auto; bottom: auto; } .os-main { margin-left: 0; padding: 24px 10px 70px; } .language { grid-template-columns: 1fr; } }

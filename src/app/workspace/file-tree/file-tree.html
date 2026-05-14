@@ -1,0 +1,56 @@
+<ng-template #renderTree let-treeNodes let-currentSelectedId="selectedId" let-currentFolderSelectedId="selectedFolderId">
+  <ul class="tree-list" *ngIf="treeNodes.length > 0; else emptyTree">
+    <li *ngFor="let node of treeNodes; trackBy: trackByNodeId" class="tree-item">
+      <div
+        class="node-row"
+        [class.selected]="currentSelectedId === node.id"
+        [class.folder-selected]="node.isDirectory && currentFolderSelectedId === node.id"
+        [class.file]="!node.isDirectory"
+        [class.directory]="node.isDirectory"
+        (click)="onNodeClick($event, node)"
+        (dblclick)="onDoubleClick($event, node)"
+        (contextmenu)="onRightClick($event, node)">
+        <span class="node-arrow" *ngIf="node.isDirectory" (click)="onArrowClick($event, node)">{{ isCollapsed(node.id) ? '▸' : '▾' }}</span>
+        <span class="node-icon" *ngIf="!node.isDirectory">•</span>
+        <span class="node-label" *ngIf="renamingNode?.id !== node.id">{{ node.name }}</span>
+        <span class="node-actions" *ngIf="node.isDirectory && currentFolderSelectedId === node.id">
+          <button class="node-action-btn" (click)="quickCreateFile(node); $event.stopPropagation()" title="New File">+</button>
+          <button class="node-action-btn" (click)="quickCreateFolder(node); $event.stopPropagation()" title="New Folder">▸</button>
+        </span>
+        <input
+          *ngIf="renamingNode?.id === node.id"
+          class="rename-input"
+          [(ngModel)]="newName"
+          (blur)="commitRename()"
+          (keydown)="onRenameKeydown($event)"
+          (click)="$event.stopPropagation()"
+          autofocus />
+      </div>
+
+      <ng-container *ngIf="node.isDirectory && !isCollapsed(node.id)">
+        <ng-container
+          *ngTemplateOutlet="renderTree; context: { $implicit: node.children, selectedId: currentSelectedId, selectedFolderId: currentFolderSelectedId }">
+        </ng-container>
+      </ng-container>
+    </li>
+  </ul>
+</ng-template>
+
+<ng-container
+  *ngTemplateOutlet="renderTree; context: { $implicit: nodes, selectedId: selectedId, selectedFolderId: selectedFolderId }">
+</ng-container>
+
+<div *ngIf="showContextMenu" class="context-menu" [style.left.px]="contextMenuPosition.x" [style.top.px]="contextMenuPosition.y">
+  <ng-container *ngIf="contextMenuNode?.isDirectory">
+    <button class="context-menu-item" (click)="createFileInFolder()">+ New File</button>
+    <button class="context-menu-item" (click)="createFolderInFolder()">+ New Folder</button>
+  </ng-container>
+  <button class="context-menu-item" (click)="startRename(contextMenuNode!)">Rename</button>
+  <button class="context-menu-item" (click)="closeContextMenu()">Cancel</button>
+</div>
+
+<div *ngIf="showContextMenu" class="context-menu-overlay" (click)="closeContextMenu()"></div>
+
+<ng-template #emptyTree>
+  <div class="tree-empty">No files</div>
+</ng-template>

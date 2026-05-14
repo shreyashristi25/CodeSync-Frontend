@@ -1,0 +1,144 @@
+<div class="mode-toggle">
+  <button class="mode-btn" id="modeToggle" (click)="toggleTheme()">
+    <svg class="icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+    </svg>
+    <svg class="icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+    <span class="mode-label mono" id="modeLabel">{{ getThemeLabel() }}</span>
+  </button>
+</div>
+
+<div class="cs-top-bar">
+  <span class="left">PUBLIC_INDEX READ_ONLY SEC: GUEST_01</span>
+  <span class="right"><span class="status-dot"></span> LATENCY {{ latencyMs }}ms LOAD {{ loadPercent }}% REQ/S {{ reqPerSec }}</span>
+</div>
+
+<section class="os-shell">
+  <aside class="os-sidebar cs-shell">
+    <div class="sidebar-top mono">SEC: GUEST_01</div>
+    <div class="os-nav-top">
+      <a class="os-nav-item" routerLink="/guest-dashboard" routerLinkActive="active">
+        <span class="label mono">HOME</span>
+      </a>
+      <button class="os-nav-item" type="button" (click)="scrollToProjects()">
+        <span class="label mono">PROJECTS</span>
+      </button>
+      <button class="os-nav-item" type="button" (click)="focusSearch()">
+        <span class="label mono">SEARCH</span>
+      </button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="os-nav-item danger-nav" type="button" (click)="navigateToRole()">
+        <span class="label mono">[&larr;] EXIT GUEST</span>
+      </button>
+    </div>
+  </aside>
+
+  <nav class="os-dock">
+    <button class="dock-item" type="button" [class.active]="activeDockItem === 'explorer'" (click)="onDockCommand('explorer')">EXPL</button>
+    <button class="dock-item" type="button" [class.active]="activeDockItem === 'search'" (click)="onDockCommand('search')">SRCH</button>
+    <button class="dock-item" type="button" [class.active]="activeDockItem === 'git'" (click)="onDockCommand('git')">GIT</button>
+    <button class="dock-item" type="button" [class.active]="activeDockItem === 'run'" (click)="onDockCommand('run')">RUN</button>
+  </nav>
+
+  <main class="os-main">
+    <section class="content-wrap">
+      <div class="header-row">
+        <div>
+          <h1 class="mono">PUBLIC_PROJECTS</h1>
+        </div>
+        <input class="search-input" type="text" placeholder="Search public workspaces" [(ngModel)]="searchQuery" (input)="onSearch()" />
+      </div>
+
+      <!-- User Search Section -->
+      <div class="user-search-section cs-card" *ngIf="!selectedUser">
+        <h3 class="mono">Search Users</h3>
+        <div class="user-search-row">
+          <input class="search-input" type="text" placeholder="Search by name or email" [(ngModel)]="userSearchQuery" (input)="searchUsers()" />
+        </div>
+        <div *ngIf="userSearchLoading" class="user-search-loading mono">Searching...</div>
+        <div class="user-search-results" *ngIf="userSearchResults.length > 0">
+          <div *ngFor="let user of userSearchResults" class="user-result" (click)="selectUser(user)">
+            <span class="user-avatar mono">{{ user.fullName.charAt(0).toUpperCase() }}</span>
+            <div class="user-info">
+              <span class="user-name">{{ user.fullName }}</span>
+              <span class="user-email">{{ user.email }}</span>
+            </div>
+            <span class="user-role mono">{{ user.role }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected User Projects -->
+      <div class="user-projects-section cs-card" *ngIf="selectedUser">
+        <div class="user-projects-header">
+          <button class="back-btn mono" (click)="clearUserSearch()">&larr; Back</button>
+          <div class="selected-user-info">
+            <span class="user-avatar large mono">{{ selectedUser.fullName.charAt(0).toUpperCase() }}</span>
+            <div>
+              <h3 class="mono">{{ selectedUser.fullName }}</h3>
+              <span class="user-email">{{ selectedUser.email }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <h4 class="mono">Public Projects</h4>
+        <div *ngIf="loadingUserProjects" class="mono">Loading projects...</div>
+        <div class="projects-grid" *ngIf="!loadingUserProjects && userProjects.length > 0">
+          <article *ngFor="let project of userProjects" class="project-card cs-card" (click)="openProject(project)">
+            <h2 class="project-name mono">{{ project.name }}</h2>
+            <p class="project-desc">{{ project.description }}</p>
+            <div class="card-footer">
+              <span class="open-link">Open &rarr;</span>
+            </div>
+          </article>
+        </div>
+        <div *ngIf="!loadingUserProjects && userProjects.length === 0" class="empty-card">No public projects</div>
+      </div>
+
+      <div *ngIf="error" class="empty-card cs-card">{{ error }}</div>
+
+      <div class="projects-grid" *ngIf="loading">
+        <article class="project-card cs-card skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]"></article>
+      </div>
+
+      <div class="projects-grid" *ngIf="!loading && projects.length > 0">
+        <article *ngFor="let project of projects" class="project-card cs-card" (click)="openProject(project)">
+          <div class="card-top mono">
+            <span class="sec-id">SEC: PRJ_{{ project.id }}</span>
+            <span *ngIf="project.ownerId !== 0" class="status-dot"></span>
+          </div>
+
+          <h2 class="project-name mono">{{ project.name }}</h2>
+          <p class="project-desc">{{ project.description }}</p>
+
+          <div class="tech-row">
+            <span class="tech-tag">{{ getPrimaryTech(project) }}</span>
+            <span class="tech-tag">COLLABORATIVE</span>
+          </div>
+
+          <div class="card-telemetry telemetry-hidden">
+            LATENCY {{ getProjectLatency(project) }}ms · FILES {{ getProjectFileCount(project) }} · CREATED {{ project.createdAt ? (project.createdAt | date:'MMM d') : '--' }}
+          </div>
+
+          <div class="card-footer">
+            <span class="owner">User {{ project.ownerId }}</span>
+            <span class="open-link">Open &rarr;</span>
+          </div>
+        </article>
+      </div>
+
+      <div *ngIf="!loading && projects.length === 0" class="empty-card cs-card">No public projects yet</div>
+    </section>
+
+    <div class="coming-soon-toast" *ngIf="comingSoonMsg">{{ comingSoonMsg | uppercase }}</div>
+  </main>
+</section>
+
+<div class="cs-status-bar">
+  <span class="mono">_ WAITING_FOR_INPUT</span>
+  <span class="mono">v1.0.0.map</span>
+</div>

@@ -1,0 +1,86 @@
+<div class="mode-toggle">
+  <button
+    class="mode-btn"
+    id="modeToggle"
+    onclick="(function(){const root=document.documentElement;const dark=root.getAttribute('data-theme')==='dark';root.setAttribute('data-theme',dark?'light':'dark');const label=document.getElementById('modeLabel');if(label){label.textContent=dark?'LIGHT':'DARK';}localStorage.setItem('cs-theme',dark?'light':'dark');})();"
+  >
+    <svg class="icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+    </svg>
+    <svg class="icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+    <span class="mode-label mono" id="modeLabel">DARK</span>
+  </button>
+</div>
+
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE PRIVILEGED_ACCESS SEC: ROOT_01</span>
+  <span class="right">AUDIT_MODE_ACTIVE [SECURE_CHANNEL]</span>
+</div>
+
+<section class="os-shell">
+  <aside class="os-sidebar cs-shell">
+    <div class="sidebar-top mono">SEC: ROOT_01</div>
+    <div class="os-nav-top">
+      <a class="os-nav-item" routerLink="/admin"><span class="label mono">ADMIN_HOME</span></a>
+      <a class="os-nav-item" routerLink="/admin/users"><span class="label mono">MANAGE_USERS</span></a>
+      <a class="os-nav-item" routerLink="/admin/analytics"><span class="label mono">ANALYTICS</span></a>
+      <a class="os-nav-item" routerLink="/admin/sessions"><span class="label mono">SESSIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/executions"><span class="label mono">EXECUTIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/languages"><span class="label mono">LANGUAGES</span></a>
+      <a class="os-nav-item" routerLink="/admin/notifications"><span class="label mono">NOTIFICATIONS</span></a>
+      <a class="os-nav-item active" routerLink="/admin/profile"><span class="label mono">PROFILE</span></a>
+    </div>
+    <button class="os-nav-item guest-avatar" type="button" (click)="logout()">
+      <span class="avatar mono">A</span><span class="label mono">ADMIN</span>
+    </button>
+  </aside>
+
+  <main class="os-main">
+    <section class="content-wrap">
+      <section class="intro cs-card">
+        <span class="system-tag root-tag">SEC: ROOT_01</span>
+        <h1 class="mono">ADMIN_PROFILE</h1>
+        <div class="danger-tags">
+          <span class="system-tag danger">AUDIT_MODE</span>
+          <span class="system-tag danger">PRIVILEGED_ACCESS</span>
+        </div>
+        <p class="root-subtitle">Platform administration and user management.</p>
+      </section>
+
+      <section class="profile-card cs-card" *ngIf="user">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <span class="avatar-large mono">A</span>
+          </div>
+          <div class="profile-info">
+            <h2 class="mono">{{ user.email }}</h2>
+            <span class="system-tag root-tag">ADMIN_ROLE</span>
+          </div>
+        </div>
+
+        <div class="profile-details">
+          <div class="detail-row">
+            <span class="detail-label mono">EMAIL</span>
+            <span class="detail-value">{{ user.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label mono">ROLE</span>
+            <span class="detail-value">ADMIN</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label mono">ACCESS_LEVEL</span>
+            <span class="detail-value">ROOT_PRIVILEGED</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+</section>
+
+<div class="cs-status-bar">
+  <span class="mono">_ WAITING_FOR_INPUT</span>
+  <span class="mono">v1.0.0.map</span>
+</div>

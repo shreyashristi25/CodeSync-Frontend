@@ -1,0 +1,238 @@
+.pricing-page {
+  min-height: 100vh;
+  background: var(--cs-bg, #0a0d12);
+  color: var(--cs-text-primary, #e0e6ed);
+  padding: 40px 20px;
+}
+
+.pricing-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.pricing-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.pricing-header p {
+  color: var(--cs-text-secondary, #8b92a8);
+  font-size: 18px;
+}
+
+.back-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--cs-border, #2a2f45);
+  color: var(--cs-text-secondary, #8b92a8);
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  border-color: var(--cs-accent, #00ff88);
+  color: var(--cs-accent, #00ff88);
+}
+
+.pricing-grid {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  max-width: 900px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.plan-card {
+  background: var(--cs-surface, #11141d);
+  border: 1px solid var(--cs-border, #2a2f45);
+  border-radius: 16px;
+  padding: 30px;
+  width: 350px;
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 255, 136, 0.1);
+}
+
+.plan-card.current {
+  border-color: var(--cs-accent, #00ff88);
+}
+
+.plan-card.pro {
+  border-color: var(--cs-accent, #00ff88);
+  background: linear-gradient(180deg, rgba(0, 255, 136, 0.05) 0%, var(--cs-surface, #11141d) 100%);
+}
+
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--cs-accent, #00ff88);
+  color: #000;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.plan-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.price .currency {
+  font-size: 24px;
+  color: var(--cs-text-secondary, #8b92a8);
+}
+
+.price .amount {
+  font-size: 48px;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+}
+
+.price .period {
+  font-size: 16px;
+  color: var(--cs-text-secondary, #8b92a8);
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px 0;
+}
+
+.features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cs-border, #2a2f45);
+  font-size: 14px;
+}
+
+.features li:last-child {
+  border-bottom: none;
+}
+
+.features li.disabled {
+  color: var(--cs-text-muted, #5c667d);
+}
+
+.features li .icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.features li .icon.check {
+  color: var(--cs-accent, #00ff88);
+}
+
+.features li .icon.x {
+  color: var(--cs-text-muted, #5c667d);
+}
+
+.plan-footer {
+  text-align: center;
+}
+
+.upgrade-btn {
+  width: 100%;
+  padding: 15px;
+  background: var(--cs-accent, #00ff88);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upgrade-btn:hover:not(:disabled) {
+  background: #00cc6e;
+}
+
+.upgrade-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.test-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--cs-border, #2a2f45);
+  color: var(--cs-text-secondary, #8b92a8);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.test-btn:hover:not(:disabled) {
+  border-color: var(--cs-accent, #00ff88);
+  color: var(--cs-accent, #00ff88);
+}
+
+.test-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.current-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: var(--cs-surface-2, #1a1f2e);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--cs-text-secondary, #8b92a8);
+}
+
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: var(--cs-text-secondary, #8b92a8);
+}
+
+.loading .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

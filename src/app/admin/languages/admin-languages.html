@@ -1,0 +1,50 @@
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE RUNTIME_LANGUAGES SEC: ROOT_01</span>
+  <span class="right">SANDBOX_MATRIX [EDITABLE]</span>
+</div>
+
+<section class="admin-shell">
+  <aside class="os-sidebar cs-shell">
+    <div class="sidebar-top mono">SEC: ROOT_01</div>
+    <div class="os-nav-top">
+      <a class="os-nav-item" routerLink="/admin"><span class="label mono">ADMIN_HOME</span></a>
+      <a class="os-nav-item" routerLink="/admin/users"><span class="label mono">MANAGE_USERS</span></a>
+      <a class="os-nav-item" routerLink="/admin/analytics"><span class="label mono">ANALYTICS</span></a>
+      <a class="os-nav-item" routerLink="/admin/sessions"><span class="label mono">SESSIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/executions"><span class="label mono">EXECUTIONS</span></a>
+      <a class="os-nav-item active" routerLink="/admin/languages"><span class="label mono">LANGUAGES</span></a>
+      <a class="os-nav-item" routerLink="/admin/notifications"><span class="label mono">NOTIFICATIONS</span></a>
+      <a class="os-nav-item" routerLink="/profile"><span class="label mono">PROFILE</span></a>
+    </div>
+  </aside>
+
+  <main class="os-main">
+    <section class="content-wrap">
+      <header class="cs-card header">
+        <div>
+          <h1 class="mono">SUPPORTED_LANGUAGES</h1>
+          <p>Enable or disable runtime environments for execution sandboxes.</p>
+        </div>
+        <button class="os-nav-item refresh" type="button" (click)="loadLanguages()">REFRESH</button>
+      </header>
+
+      <section class="cs-card list">
+        <div class="state" *ngIf="loading">Loading languages...</div>
+        <div class="state error" *ngIf="error">{{ error }}</div>
+
+        <article class="language" *ngFor="let language of languages">
+          <div>
+            <div class="mono">{{ language.code }}</div>
+            <div class="mono muted">ID {{ language.id }}</div>
+          </div>
+          <input type="text" [(ngModel)]="language.displayName" />
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="language.enabled" />
+            <span>{{ language.enabled ? 'ENABLED' : 'DISABLED' }}</span>
+          </label>
+          <button class="save" type="button" (click)="saveLanguage(language)">SAVE</button>
+        </article>
+      </section>
+    </section>
+  </main>
+</section>

@@ -1,0 +1,49 @@
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE COLLAB_MONITOR SEC: ROOT_01</span>
+  <span class="right">ACTIVE_SESSIONS [LIVE]</span>
+</div>
+
+<section class="admin-shell">
+  <aside class="os-sidebar cs-shell">
+    <div class="sidebar-top mono">SEC: ROOT_01</div>
+    <div class="os-nav-top">
+      <a class="os-nav-item" routerLink="/admin"><span class="label mono">ADMIN_HOME</span></a>
+      <a class="os-nav-item" routerLink="/admin/users"><span class="label mono">MANAGE_USERS</span></a>
+      <a class="os-nav-item" routerLink="/admin/analytics"><span class="label mono">ANALYTICS</span></a>
+      <a class="os-nav-item active" routerLink="/admin/sessions"><span class="label mono">SESSIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/executions"><span class="label mono">EXECUTIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/languages"><span class="label mono">LANGUAGES</span></a>
+      <a class="os-nav-item" routerLink="/admin/notifications"><span class="label mono">NOTIFICATIONS</span></a>
+      <a class="os-nav-item" routerLink="/profile"><span class="label mono">PROFILE</span></a>
+    </div>
+  </aside>
+
+  <main class="os-main">
+    <section class="content-wrap">
+      <header class="cs-card header">
+        <div>
+          <h1 class="mono">ACTIVE_COLLAB_SESSIONS</h1>
+          <p>Monitor live collaboration sessions and force terminate when needed.</p>
+        </div>
+        <button class="os-nav-item refresh" type="button" (click)="loadSessions()">REFRESH</button>
+      </header>
+
+      <section class="cs-card list">
+        <div class="state" *ngIf="loading">Loading sessions...</div>
+        <div class="state error" *ngIf="error">{{ error }}</div>
+        <div class="state" *ngIf="!loading && !error && sessions.length === 0">No active sessions.</div>
+
+        <article class="session" *ngFor="let session of sessions">
+          <div class="session-meta">
+            <div class="mono">SESSION {{ session.sessionId }}</div>
+            <div class="mono muted">FILE {{ session.fileId }} · {{ session.createdAt | date:'MMM d, HH:mm' }}</div>
+          </div>
+          <div class="session-participants">
+            <span class="pill" *ngFor="let p of session.participants">{{ p.displayName }} ({{ p.userId }})</span>
+          </div>
+          <button class="danger" type="button" (click)="endSession(session)">END_SESSION</button>
+        </article>
+      </section>
+    </section>
+  </main>
+</section>

@@ -1,0 +1,5 @@
+<div class="app-shell-root" [@routeAnimations]="getRouteAnimationData(outlet)">
+	<router-outlet #outlet="outlet"></router-outlet>
+	<app-toast-center></app-toast-center>
+	<app-session-warning [open]="warningOpen" [secondsLeft]="countdown" (stay)="stayLoggedIn()" (logout)="logoutNow()"></app-session-warning>
+</div>

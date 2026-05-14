@@ -1,0 +1,65 @@
+<div class="cs-top-bar">
+  <span class="left">ROOT_CONSOLE PLATFORM_ALERTS SEC: ROOT_01</span>
+  <span class="right">BROADCAST [CONTROLLED]</span>
+</div>
+
+<section class="admin-shell">
+  <aside class="os-sidebar cs-shell">
+    <div class="sidebar-top mono">SEC: ROOT_01</div>
+    <div class="os-nav-top">
+      <a class="os-nav-item" routerLink="/admin"><span class="label mono">ADMIN_HOME</span></a>
+      <a class="os-nav-item" routerLink="/admin/users"><span class="label mono">MANAGE_USERS</span></a>
+      <a class="os-nav-item" routerLink="/admin/analytics"><span class="label mono">ANALYTICS</span></a>
+      <a class="os-nav-item" routerLink="/admin/sessions"><span class="label mono">SESSIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/executions"><span class="label mono">EXECUTIONS</span></a>
+      <a class="os-nav-item" routerLink="/admin/languages"><span class="label mono">LANGUAGES</span></a>
+      <a class="os-nav-item active" routerLink="/admin/notifications"><span class="label mono">NOTIFICATIONS</span></a>
+      <a class="os-nav-item" routerLink="/profile"><span class="label mono">PROFILE</span></a>
+    </div>
+  </aside>
+
+  <main class="os-main">
+    <section class="content-wrap">
+      <header class="cs-card header">
+        <div>
+          <h1 class="mono">PLATFORM_NOTIFICATIONS</h1>
+          <p>Broadcast alerts to all users or targeted recipients.</p>
+        </div>
+      </header>
+
+      <section class="cs-card form">
+        <div class="row">
+          <label class="mono">TYPE</label>
+          <input type="text" [(ngModel)]="type" />
+        </div>
+        <div class="row">
+          <label class="mono">MESSAGE</label>
+          <textarea rows="4" [(ngModel)]="message"></textarea>
+        </div>
+        <div class="row">
+          <label class="mono">TARGET</label>
+          <div class="toggle-row">
+            <button type="button" [class.active]="mode === 'ALL'" (click)="mode = 'ALL'">ALL_USERS</button>
+            <button type="button" [class.active]="mode === 'TARGETED'" (click)="mode = 'TARGETED'">TARGETED</button>
+          </div>
+        </div>
+
+        <div class="user-list" *ngIf="mode === 'TARGETED'">
+          <label class="mono">SELECT_USERS</label>
+          <div class="user-grid">
+            <button type="button" class="user-chip" *ngFor="let user of users" [class.active]="selectedUserIds.has(user.id)" (click)="toggleUser(user.id)">
+              {{ user.fullName }} · {{ user.email }}
+            </button>
+          </div>
+        </div>
+
+        <div class="state error" *ngIf="error">{{ error }}</div>
+        <div class="state success" *ngIf="success">{{ success }}</div>
+
+        <button class="send" type="button" (click)="sendNotification()" [disabled]="loading">
+          {{ loading ? 'SENDING...' : 'SEND_NOTIFICATION' }}
+        </button>
+      </section>
+    </section>
+  </main>
+</section>

@@ -1,0 +1,24 @@
+:host { display: block; min-height: calc(100vh - 60px); }
+.history-shell { padding: 56px 16px 70px; margin-left: 250px; display: grid; gap: 14px; }
+.history-head, .filters, .history-table { border: 1px solid var(--cs-border); background: var(--cs-surface); padding: 16px; }
+[data-theme='light'] .history-head, [data-theme='light'] .filters, [data-theme='light'] .history-table { border-radius: 12px; box-shadow: var(--cs-shadow); }
+.history-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+h1 { margin: 0; }
+p { margin: 4px 0 0; color: var(--cs-text-secondary); }
+.back-btn { border: 1px solid var(--cs-border); background: var(--cs-surface-2); color: var(--cs-text-secondary); padding: 10px 12px; text-decoration: none; }
+.filters { display: grid; grid-template-columns: minmax(0, 1fr) 180px 220px 180px; gap: 8px; }
+.filters input, .filters select { width: 100%; padding: 10px 12px; border: 1px solid var(--cs-border); background: var(--cs-surface-2); color: var(--cs-text-primary); }
+table { width: 100%; border-collapse: collapse; }
+th, td { border-bottom: 1px solid var(--cs-border); text-align: left; padding: 10px 8px; font-size: 12px; }
+th { color: var(--cs-text-muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.pill { border: 1px solid var(--cs-success); color: var(--cs-success); padding: 2px 8px; font-size: 11px; }
+.pill.fail { border-color: var(--cs-error); color: var(--cs-error); }
+.pill.term { border-color: var(--cs-warning); color: var(--cs-warning); }
+.actions { display: flex; gap: 8px; }
+.actions button, .pager button, .modal button { border: 1px solid var(--cs-border); background: var(--cs-surface-2); color: var(--cs-text-secondary); padding: 6px 10px; cursor: pointer; }
+.pager { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+.empty { text-align: center; color: var(--cs-text-muted); }
+.modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: center; z-index: 2500; }
+.modal { width: min(760px, calc(100vw - 24px)); border: 1px solid var(--cs-border); background: var(--cs-surface); padding: 16px; }
+.modal pre { max-height: 340px; overflow: auto; border: 1px solid var(--cs-border); padding: 10px; background: var(--cs-surface-2); }
+@media (max-width: 980px) { .history-shell { margin-left: 0; padding: 20px 10px 70px; } .filters { grid-template-columns: 1fr; } .history-head { flex-direction: column; align-items: flex-start; } }

@@ -1,0 +1,84 @@
+<div class="cs-top-bar">
+  <span class="left">EXECUTION_AUDIT SEC: DEV_01</span>
+  <span class="right" style="display: inline-flex; align-items: center; gap: 10px;">
+    <app-notification-bell></app-notification-bell>
+    RUN_LOGS [FILTERABLE]
+  </span>
+</div>
+
+<section class="history-shell">
+  <header class="history-head cs-card">
+    <div>
+      <h1 class="mono">EXECUTION_HISTORY</h1>
+      <p>Review run outcomes, inspect output, and re-run workflows.</p>
+    </div>
+    <a class="back-btn mono" routerLink="/dashboard">&larr; BACK_DASHBOARD</a>
+  </header>
+
+  <section class="filters cs-card">
+    <input type="text" [(ngModel)]="search" (input)="applyFilters()" placeholder="Search by filename" />
+    <select [(ngModel)]="statusFilter" (change)="applyFilters()">
+      <option value="ALL">All Statuses</option>
+      <option value="Success">Success</option>
+      <option value="Failed">Failed</option>
+      <option value="Terminated">Terminated</option>
+    </select>
+    <select [(ngModel)]="projectFilter" (change)="applyFilters()">
+      <option value="ALL">All Projects</option>
+      <option *ngFor="let project of projects" [ngValue]="project.id">{{ project.name }}</option>
+    </select>
+    <select [(ngModel)]="languageFilter" (change)="applyFilters()">
+      <option value="ALL">All Languages</option>
+      <option *ngFor="let language of languages" [value]="language">{{ language }}</option>
+    </select>
+  </section>
+
+  <section class="history-table cs-card">
+    <table>
+      <thead>
+        <tr>
+          <th>DATE</th>
+          <th>PROJECT</th>
+          <th>FILE</th>
+          <th>LANG</th>
+          <th>DURATION</th>
+          <th>MEM</th>
+          <th>STATUS</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let entry of pageEntries">
+          <td>{{ entry.date | date:'MMM d, HH:mm' }}</td>
+          <td>{{ entry.projectName }}</td>
+          <td>{{ entry.file }}</td>
+          <td>{{ entry.language }}</td>
+          <td>{{ entry.durationMs }}ms</td>
+          <td>{{ entry.memoryMb }}MB</td>
+          <td><span class="pill" [class.fail]="entry.status==='Failed'" [class.term]="entry.status==='Terminated'">{{ entry.status }}</span></td>
+          <td class="actions">
+            <button (click)="viewOutput(entry)">View Output</button>
+            <button (click)="rerun(entry)">Re-run</button>
+          </td>
+        </tr>
+        <tr *ngIf="pageEntries.length === 0">
+          <td colspan="8" class="empty">No runs match your filters.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pager">
+      <button (click)="prevPage()" [disabled]="currentPage===1">Prev</button>
+      <span class="mono">PAGE {{ currentPage }} / {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage===totalPages">Next</button>
+    </div>
+  </section>
+</section>
+
+<div class="modal-wrap" *ngIf="selectedOutput" (click)="closeOutput()">
+  <section class="modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">OUTPUT: {{ selectedOutput.file }}</h3>
+    <pre>{{ selectedOutput.output }}</pre>
+    <button (click)="closeOutput()">Close</button>
+  </section>
+</div>

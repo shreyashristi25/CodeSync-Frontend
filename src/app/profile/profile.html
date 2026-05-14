@@ -1,0 +1,70 @@
+<div class="cs-top-bar">
+  <span class="left">PROFILE_CONSOLE SEC: USER_01</span>
+  <span class="right" style="display: inline-flex; align-items: center; gap: 10px;">
+    <app-notification-bell></app-notification-bell>
+    IDENTITY [EDITABLE]
+  </span>
+</div>
+
+<section class="profile-shell" *ngIf="user">
+  <header class="profile-head cs-card">
+    <div>
+      <h1 class="mono">USER_PROFILE</h1>
+      <p>{{ user.email }} · {{ user.role | uppercase }}</p>
+    </div>
+    <a class="back-btn mono" [routerLink]="user.role === 'admin' ? '/admin' : '/dashboard'">&larr; BACK</a>
+  </header>
+
+  <section class="profile-grid">
+    <article class="profile-card cs-card">
+      <h2 class="mono">Avatar</h2>
+      <div class="avatar-current">
+        <img [src]="user.avatar || avatarOptions[0]" alt="avatar" />
+      </div>
+      <div class="avatars">
+        <button type="button" (click)="toggleAvatarPicker()">Choose Avatar</button>
+      </div>
+    </article>
+
+    <article class="profile-card cs-card">
+      <h2 class="mono">Account</h2>
+      <label>Display Name</label>
+      <input type="text" [(ngModel)]="name" />
+      <label>Email</label>
+      <input type="email" [value]="user.email" readonly />
+      <label>Bio</label>
+      <textarea rows="4" [(ngModel)]="bio"></textarea>
+      <button (click)="saveProfile()">Save Profile</button>
+    </article>
+
+    <article class="profile-card cs-card">
+      <h2 class="mono">Security</h2>
+      <label>Current Password</label>
+      <input type="password" [(ngModel)]="currentPassword" />
+      <label>New Password</label>
+      <input type="password" [(ngModel)]="nextPassword" />
+      <label>Confirm Password</label>
+      <input type="password" [(ngModel)]="confirmPassword" />
+      <button (click)="changePassword()">Change Password</button>
+    </article>
+
+    <article class="profile-card cs-card">
+      <h2 class="mono">Stats</h2>
+      <div class="stat-row"><span>Projects</span><strong>{{ stats.projects }}</strong></div>
+      <div class="stat-row"><span>File Edits</span><strong>{{ stats.fileEdits }}</strong></div>
+      <div class="stat-row"><span>Executions</span><strong>{{ stats.executions }}</strong></div>
+      <div class="stat-row"><span>Join Date</span><strong>{{ stats.joined }}</strong></div>
+    </article>
+  </section>
+</section>
+
+<div class="modal-wrap" *ngIf="avatarPickerOpen" (click)="avatarPickerOpen=false">
+  <section class="modal" (click)="$event.stopPropagation()">
+    <h3 class="mono">Choose Avatar</h3>
+    <div class="avatar-grid">
+      <button type="button" class="avatar-pick" *ngFor="let avatar of avatarOptions" (click)="setAvatar(avatar)">
+        <img [src]="avatar" alt="avatar option" />
+      </button>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,97 @@
+<div class="fixed top-0 left-0 right-0 h-8 bg-surface-300/80 backdrop-blur border-b border-border-light flex items-center justify-between px-4 font-mono text-[10px] z-[9000]">
+  <span class="text-text-muted tracking-wider">ALERT_CENTER SEC: DEV_01</span>
+  <span class="text-memory tracking-wider flex items-center gap-3">
+    <app-notification-bell></app-notification-bell>
+    UNREAD {{ unreadCount }}
+  </span>
+</div>
+
+<section class="min-h-screen bg-background pt-8 pb-7 flex">
+  <aside class="fixed top-8 left-4 bottom-8 w-[220px] bg-surface-200/50 backdrop-blur-md border border-border-light rounded-xl flex flex-col justify-between z-[100] shadow-card-float overflow-hidden group">
+    <div>
+      <div class="text-[10px] font-mono text-text-muted px-4 py-3 border-b border-border-light tracking-widest bg-white/5">SEC: DEV_01</div>
+      <div class="flex flex-col gap-[1px] p-2">
+        <a routerLink="/dashboard" routerLinkActive="bg-white/10 border-neural text-neural" [routerLinkActiveOptions]="{exact: true}" class="px-3 py-2 border border-transparent rounded-lg font-mono text-xs text-text-secondary hover:bg-white/5 hover:border-white/10 hover:text-text-primary transition-all flex items-center justify-between">
+          <span>TRENDING</span>
+          <lucide-icon name="activity" class="w-4 h-4"></lucide-icon>
+        </a>
+        <a routerLink="/projects" routerLinkActive="bg-white/10 border-neural text-neural" class="px-3 py-2 border border-transparent rounded-lg font-mono text-xs text-text-secondary hover:bg-white/5 hover:border-white/10 hover:text-text-primary transition-all flex items-center justify-between">
+          <span>MY_PROJECTS</span>
+          <lucide-icon name="folder-git-2" class="w-4 h-4"></lucide-icon>
+        </a>
+        <a routerLink="/execution-history" routerLinkActive="bg-white/10 border-neural text-neural" class="px-3 py-2 border border-transparent rounded-lg font-mono text-xs text-text-secondary hover:bg-white/5 hover:border-white/10 hover:text-text-primary transition-all flex items-center justify-between">
+          <span>RUN_HISTORY</span>
+          <lucide-icon name="terminal" class="w-4 h-4"></lucide-icon>
+        </a>
+        <a routerLink="/notifications" routerLinkActive="bg-white/10 border-neural text-neural" class="px-3 py-2 border border-transparent rounded-lg font-mono text-xs text-text-secondary hover:bg-white/5 hover:border-white/10 hover:text-text-primary transition-all flex items-center justify-between">
+          <span>NOTIFICATIONS</span>
+          <lucide-icon name="bell" class="w-4 h-4"></lucide-icon>
+        </a>
+        <a routerLink="/profile" routerLinkActive="bg-white/10 border-neural text-neural" class="px-3 py-2 border border-transparent rounded-lg font-mono text-xs text-text-secondary hover:bg-white/5 hover:border-white/10 hover:text-text-primary transition-all flex items-center justify-between">
+          <span>PROFILE</span>
+          <lucide-icon name="user" class="w-4 h-4"></lucide-icon>
+        </a>
+      </div>
+    </div>
+
+    <div class="p-2 border-t border-border-light">
+      <button type="button" (click)="logout()" class="w-full px-3 py-2 border border-transparent rounded-lg font-mono text-xs font-bold text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all flex items-center justify-between">
+        <span>[->] LOGOUT</span>
+        <lucide-icon name="log-out" class="w-4 h-4"></lucide-icon>
+      </button>
+    </div>
+  </aside>
+
+  <main class="ml-[250px] flex-1 p-8 grid gap-6 relative">
+    <div class="absolute w-[800px] h-[800px] bg-neural/5 rounded-full blur-[100px] -top-64 -right-64 pointer-events-none"></div>
+
+    <section class="notif-hero">
+      <div class="notif-hero-top">
+        <div>
+          <span class="notif-tag mono">SEC: ALERT_CENTER</span>
+          <h1 class="notif-title">Notifications</h1>
+          <p class="notif-sub">Review collaboration updates and account activity.</p>
+        </div>
+        <div class="notif-actions">
+          <button class="notif-btn" type="button" (click)="refresh()">Refresh</button>
+        </div>
+      </div>
+
+      <div class="notif-controls">
+        <div class="notif-search">
+          <input type="text" [(ngModel)]="search" (input)="applyFilters()" placeholder="Search notifications" />
+        </div>
+        <div class="notif-filters">
+          <button type="button" class="notif-chip" [class.active]="filter === 'all'" (click)="setFilter('all')">All</button>
+          <button type="button" class="notif-chip" [class.active]="filter === 'unread'" (click)="setFilter('unread')">Unread</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="notif-list cs-card">
+      <div *ngIf="loading" class="notif-state">Loading notifications...</div>
+      <div *ngIf="error" class="notif-state error">{{ error }}</div>
+      <div *ngIf="!loading && !error && filtered.length === 0" class="notif-state">No notifications match your filters.</div>
+
+      <article class="notif-item" *ngFor="let notification of filtered">
+        <div class="notif-status" [class.unread]="!notification.isRead"></div>
+        <div class="notif-body">
+          <div class="notif-meta">
+            <span class="notif-type mono">{{ notification.type }}</span>
+            <span class="notif-time mono">{{ notification.createdAt | date:'MMM d, HH:mm' }}</span>
+          </div>
+          <div class="notif-message">{{ notification.message }}</div>
+        </div>
+        <div class="notif-item-actions">
+          <button type="button" class="notif-action" *ngIf="!notification.isRead" (click)="markAsRead(notification)">Mark read</button>
+          <button type="button" class="notif-action danger" (click)="deleteNotification(notification)">Delete</button>
+        </div>
+      </article>
+    </section>
+  </main>
+</section>
+
+<div class="fixed bottom-0 left-0 right-0 h-7 bg-surface-300 border-t border-border-light flex items-center justify-between px-4 font-mono text-[10px] text-text-muted z-[9000]">
+  <span>_ ALERT_STREAM_ACTIVE</span>
+  <span>v2.0.0.axiom</span>
+</div>
