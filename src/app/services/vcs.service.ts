@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiUrl } from './api-config';
 
 export interface SnapshotSummary {
   commitHash: string;
@@ -100,7 +101,7 @@ export interface MergePullRequestRequest {
   providedIn: 'root'
 })
 export class VcsService {
-  private readonly API_URL = 'http://localhost:8080/api/version';
+  private readonly API_URL = apiUrl('/api/version');
 
   constructor(private http: HttpClient) {}
 

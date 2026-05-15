@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, catchError, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface AdminSessionParticipant {
   userId: string;
@@ -42,7 +43,7 @@ export interface SystemStats {
   providedIn: 'root'
 })
 export class AdminPlatformService {
-  private readonly baseUrl = 'http://localhost:8080';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

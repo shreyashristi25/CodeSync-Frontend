@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiUrl } from './api-config';
 
 export interface FileNode {
   id: number;
@@ -58,7 +59,7 @@ export interface UpdateFileRequest {
   providedIn: 'root'
 })
 export class FileApiService {
-  private readonly API_URL = 'http://localhost:8083/api/files';
+  private readonly API_URL = apiUrl('/api/files');
 
   constructor(private http: HttpClient) {}
 

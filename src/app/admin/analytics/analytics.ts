@@ -6,6 +6,7 @@ import { AuthService } from '../../auth';
 import { AppStateService } from '../../services/app-state.service';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { apiUrl } from '../../services/api-config';
 
 Chart.register(...registerables);
 
@@ -138,7 +139,7 @@ export class AdminAnalyticsComponent implements AfterViewInit, OnDestroy {
   private async loadRealData(now: number, weekAgo: number): Promise<void> {
     try {
       // 1. Fetch real analytics summary
-      const analytics: any = await firstValueFrom(this.http.get('http://localhost:8081/api/auth/admin/analytics', {
+      const analytics: any = await firstValueFrom(this.http.get(apiUrl('/api/auth/admin/analytics'), {
         headers: { 'X-Admin-Email': this.authService.getCurrentUser()?.email || '' }
       }));
 
@@ -166,7 +167,7 @@ export class AdminAnalyticsComponent implements AfterViewInit, OnDestroy {
 
       // 2. Fetch real activity feed from audit service
       try {
-        const logsPage: any = await firstValueFrom(this.http.get('http://localhost:8092/api/audit/logs?size=20'));
+        const logsPage: any = await firstValueFrom(this.http.get(apiUrl('/api/audit/logs?size=20')));
         if (logsPage && logsPage.content && logsPage.content.length > 0) {
           this.activityFeed = logsPage.content.map((log: any) => {
             const time = new Date(log.timestamp).toLocaleString();

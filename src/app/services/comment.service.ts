@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiUrl } from './api-config';
 
 export interface Comment {
   id: number;
@@ -32,7 +33,7 @@ export interface UpdateCommentRequest {
   providedIn: 'root'
 })
 export class CommentService {
-  private apiUrl = 'http://localhost:8080/api/comments';
+  private apiUrl = apiUrl('/api/comments');
 
   constructor(private http: HttpClient) {}
 

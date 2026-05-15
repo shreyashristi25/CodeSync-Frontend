@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { apiUrl, notificationWsUrl } from './api-config';
 
 export interface Notification {
   id: number;
@@ -22,8 +23,8 @@ export interface UnreadCount {
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = 'http://localhost:8080/api/notifications';
-  private wsUrl = 'http://localhost:8088/ws/notifications';
+  private apiUrl = apiUrl('/api/notifications');
+  private wsUrl = notificationWsUrl();
   private stompClient: Client | null = null;
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();

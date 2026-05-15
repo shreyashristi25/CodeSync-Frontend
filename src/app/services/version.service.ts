@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiUrl } from './api-config';
 
 export interface SnapshotSummary {
   commitHash: string;
@@ -35,7 +36,7 @@ export interface CreateSnapshotRequest {
   providedIn: 'root'
 })
 export class VersionService {
-  private readonly API_URL = 'http://localhost:8086/api/version';
+  private readonly API_URL = apiUrl('/api/version');
 
   constructor(private http: HttpClient) {}
 

@@ -12,6 +12,7 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
 import { HttpClient } from '@angular/common/http';
 import { ProjectService, Project } from '../services/project.service';
 import { ExecutionService } from '../services/execution.service';
+import { apiUrl } from '../services/api-config';
 
 @Component({
   selector: 'app-dashboard',
@@ -323,7 +324,7 @@ showNotificationModal = false;
   loadUsers(): void {
     this.loadingUsers = true;
     this.http.get<{ id: number; email: string; fullName: string; role: string; status: string }[]>(
-      'http://localhost:8081/api/auth/users?excludeCurrentUser=true'
+      apiUrl('/api/auth/users?excludeCurrentUser=true')
     ).subscribe({
       next: (users) => {
         console.log('Users loaded:', users);
@@ -368,7 +369,7 @@ showNotificationModal = false;
       ? this.availableUsers.map(u => u.id)
       : Array.from(this.selectedUsers);
 
-    this.http.post('http://localhost:8088/api/notifications/admin/broadcast', {
+    this.http.post(apiUrl('/api/notifications/admin/broadcast'), {
       userIds,
       type: this.notificationType,
       message: trimmed

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth';
 import { ToastService } from '../services/toast.service';
+import { authServerUrl } from '../services/api-config';
 
 @Component({
   selector: 'app-login',
@@ -88,6 +89,6 @@ export class LoginComponent implements OnInit {
 
   oauthLogin(provider: 'google' | 'github') {
     this.loading = true;
-    window.location.href = `http://localhost:8081/oauth2/authorization/${provider}`;
+    window.location.href = authServerUrl(`/oauth2/authorization/${provider}`);
   }
 }

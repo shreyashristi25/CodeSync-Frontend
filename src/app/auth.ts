@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of, throwError, tap, catchError } from 'rxjs';
 import { AppRole, AppStateService, AppUser } from './services/app-state.service';
+import { apiUrl } from './services/api-config';
 
 export interface User {
   userId: number;
@@ -48,7 +49,7 @@ export interface AdminAccessRequest {
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:8081/api/auth';
+  private readonly API_URL = apiUrl('/api/auth');
   private readonly STORAGE_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 

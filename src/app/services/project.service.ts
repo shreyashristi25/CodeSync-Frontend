@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiUrl } from './api-config';
 
 export interface Project {
   id: number;
@@ -23,7 +24,7 @@ export interface UserSearchResult {
   providedIn: 'root'
 })
 export class ProjectService {
-  private readonly API_URL = 'http://localhost:8082/api/projects';
+  private readonly API_URL = apiUrl('/api/projects');
 
   constructor(private http: HttpClient) {}
 
@@ -56,6 +57,6 @@ export class ProjectService {
   }
 
   searchUsers(query: string): Observable<UserSearchResult[]> {
-    return this.http.get<UserSearchResult[]>(`http://localhost:8081/api/auth/users/search?q=${encodeURIComponent(query)}`);
+    return this.http.get<UserSearchResult[]>(apiUrl(`/api/auth/users/search?q=${encodeURIComponent(query)}`));
   }
 }
